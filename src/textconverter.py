@@ -92,3 +92,18 @@ class TextConverter:
     
     def markdown_to_blocks(text):
         return [i.strip() for i in text.split("\n\n") if len(i) != 0]
+    
+    def block_to_block_type(block_text):
+        if re.findall(r"^#{1,6} ", block_text):
+            return "heading"
+        if re.findall(r"^```.*```$", block_text):
+            return "code"
+
+        lines = block_text.split("\n")
+        if all([i.startswith(">") for i in lines]):
+            return "quote"
+        if all([i.startswith("-") for i in lines]) or all([i.startswith("*") for i in lines]):
+            return "unordered_list"
+        if all([l.startswith(f"{i + 1}. ") for i, l in enumerate(lines)]):
+            return "ordered_list"
+        return "paragraph"

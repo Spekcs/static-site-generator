@@ -139,11 +139,51 @@ class TestTextConverter(unittest.TestCase):
 
 This is a second block
 
-*list
+  *list
 *list2
 
 
-third block"""
+third block  """
 
         self.assertEqual(TextConverter.markdown_to_blocks(text), 
                          ["This is a block", "This is a second block", "*list\n*list2", "third block"])
+        
+    def test_block_to_block_type_heading(self):
+        block = "### asdfk"
+        block1 = "#sdf"
+        block2 = "######## sdfjh"
+        self.assertEqual(TextConverter.block_to_block_type(block), "heading")
+        self.assertEqual(TextConverter.block_to_block_type(block1), "paragraph")
+        self.assertEqual(TextConverter.block_to_block_type(block2), "paragraph")
+
+    def test_block_to_block_type_code(self):
+        block = "``````"
+        block2 = "```code```"
+        block3 = "``` ``"
+        self.assertEqual(TextConverter.block_to_block_type(block), "code")
+        self.assertEqual(TextConverter.block_to_block_type(block2), "code")
+        self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
+    
+    def test_block_to_block_type_quote(self):
+        block = ">hi \n> this is quote"
+        block2 = ">not \n a quote"
+        block3 = "asdf"
+        self.assertEqual(TextConverter.block_to_block_type(block), "quote")
+        self.assertEqual(TextConverter.block_to_block_type(block2), "paragraph")
+        self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
+
+    def test_block_to_block_type_ul(self):
+        block = "-hi\n-this\n-"
+        block2 = "*another\n*list\n*sdf"
+        block3 = "-not\n a\n *list"
+        self.assertEqual(TextConverter.block_to_block_type(block), "unordered_list")
+        self.assertEqual(TextConverter.block_to_block_type(block2), "unordered_list")
+        self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
+    
+    def test_block_to_block_type_ol(self):
+        block = "1. sdf\n2. sadf \n3. sod"
+        block2 = "1. sdf\n 3. asdf\n 2.sdf"
+        block3 = "1.sdfh\n2.sdfh"
+        self.assertEqual(TextConverter.block_to_block_type(block), "ordered_list")
+        self.assertEqual(TextConverter.block_to_block_type(block2), "paragraph")
+        self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
