@@ -126,3 +126,24 @@ class TestTextConverter(unittest.TestCase):
             TextNode(" text ", "text"),
             TextNode("bold", "bold")
         ])
+    
+    def test_markdown_to_blocks(self):
+        text = "# This is a heading\n\nThis is a paragraph of text. It has some **bold** and *italic* words inside of it.\n\n* This is the first list item in a list block\n* This is a list item\n* This is another list item"
+        self.assertEqual(TextConverter.markdown_to_blocks(text), 
+                         ["# This is a heading", 
+                          "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
+                          "* This is the first list item in a list block\n* This is a list item\n* This is another list item"])
+
+    def test_markdown_to_blocks_multiple_lines(self):
+        text = """This is a block
+
+This is a second block
+
+*list
+*list2
+
+
+third block"""
+
+        self.assertEqual(TextConverter.markdown_to_blocks(text), 
+                         ["This is a block", "This is a second block", "*list\n*list2", "third block"])

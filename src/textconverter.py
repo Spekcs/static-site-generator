@@ -89,3 +89,6 @@ class TextConverter:
         image_nodes = c.split_nodes_image(code_nodes)
         link_nodes = c.split_nodes_link(image_nodes)
         return link_nodes
+    
+    def markdown_to_blocks(text):
+        return [i.strip() for i in text.split("\n\n") if len(i) != 0]
