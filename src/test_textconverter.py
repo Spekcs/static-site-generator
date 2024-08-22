@@ -55,3 +55,34 @@ class TestTextConverter(unittest.TestCase):
     def test_extract_markdown_link_no_link(self):
         text = "![This is a markdown image](url)"
         self.assertEqual(TextConverter.extract_markdown_links(text), [])
+    
+    def test_split_nodes_image(self):
+        old_nodes = [TextNode("image ![to boot dev](https://www.boot.dev) and ![youtube](https)", "text")]
+        self.assertEqual(TextConverter.split_nodes_image(old_nodes), [
+                             TextNode("image ", "text"), 
+                             TextNode("to boot dev", "image", "https://www.boot.dev"),
+                             TextNode(" and ", "text"),
+                             TextNode("youtube", "image", "https")])
+
+    def test_split_nodes_image_first(self):
+        old_nodes = [TextNode("![text](link) and link [link](url) ![second image](url)", "text")]
+        self.assertEqual(TextConverter.split_nodes_image(old_nodes), 
+                         [TextNode("text", "image", "link"),
+                          TextNode(" and link [link](url) ", "text"),
+                          TextNode("second image", "image", "url")])
+
+    def test_split_nodes_link(self):
+        old_nodes = [TextNode("link [link](url) and [second link](url)", "text")]
+        self.assertEqual(TextConverter.split_nodes_link(old_nodes), [
+                             TextNode("link ", "text"), 
+                             TextNode("link", "link", "url"),
+                             TextNode(" and ", "text"),
+                             TextNode("second link", "link", "url")])
+
+    def test_split_nodes_link_and_image(self):
+        old_nodes = [TextNode("this is code", "code"), TextNode("![image](url)[link](url)", "text")]
+        split_images = TextConverter.split_nodes_image(old_nodes)
+        self.assertEqual(TextConverter.split_nodes_link(split_images), [
+                         TextNode("this is code", "code"),
+                         TextNode("image", "image", "url"),
+                         TextNode("link", "link", "url")])
