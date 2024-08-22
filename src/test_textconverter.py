@@ -86,3 +86,43 @@ class TestTextConverter(unittest.TestCase):
                          TextNode("this is code", "code"),
                          TextNode("image", "image", "url"),
                          TextNode("link", "link", "url")])
+    
+    def test_split_nodes_link_text_final(self):
+        old_nodes = [TextNode("[link](url) text", "text")]
+        self.assertEqual(TextConverter.split_nodes_link(old_nodes), [
+            TextNode("link", "link", "url"), 
+            TextNode(" text", "text")])
+
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        self.assertEqual(TextConverter.text_to_textnodes(text),
+                         [
+        TextNode("This is ", "text"),
+        TextNode("text", "bold"),
+        TextNode(" with an ", "text"),
+        TextNode("italic", "italic"),
+        TextNode(" word and a ", "text"),
+        TextNode("code block", "code"),
+        TextNode(" and an ", "text"),
+        TextNode("obi wan image", "image", "https://i.imgur.com/fJRm4Vk.jpeg"),
+        TextNode(" and a ", "text"),
+        TextNode("link", "link", "https://boot.dev"),
+        ])
+
+    def test_text_to_textnodes_multiple(self):
+        text = "*italic text*`code`*italic* ![image](url)"
+        self.assertEqual(TextConverter.text_to_textnodes(text), [
+            TextNode("italic text", "italic"),
+            TextNode("code", "code"),
+            TextNode("italic", "italic"),
+            TextNode(" ", "text"),
+            TextNode("image", "image", "url")
+        ])
+
+    def test_text_to_textnodes_text_final(self):
+        text = "*italic* text **bold**"
+        self.assertEqual(TextConverter.text_to_textnodes(text), [
+            TextNode("italic", "italic"),
+            TextNode(" text ", "text"),
+            TextNode("bold", "bold")
+        ])

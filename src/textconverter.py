@@ -37,6 +37,11 @@ class TextConverter:
                 new_nodes.append(node)
                 continue
             images = TextConverter.extract_markdown_images(node.text)
+
+            if len(images) == 0:
+                new_nodes.append(node)
+                continue
+
             current_text = node.text
             for i, image in enumerate(images):
                 split_text = current_text.split(f"![{image[0]}]({image[1]})", 1)
@@ -59,6 +64,11 @@ class TextConverter:
                 new_nodes.append(node)
                 continue
             links = TextConverter.extract_markdown_links(node.text)
+
+            if len(links) == 0:
+                new_nodes.append(node)
+                continue
+
             current_text = node.text
             for i, link in enumerate(links):
                 split_text = current_text.split(f"[{link[0]}]({link[1]})", 1)
@@ -70,3 +80,12 @@ class TextConverter:
                     new_nodes.append(TextNode(split_text[1], "text"))
 
         return new_nodes
+
+    def text_to_textnodes(text):
+        c = TextConverter
+        bold_nodes = c.split_nodes_delimiter([TextNode(text, "text")], "**", "bold")
+        italic_nodes = c.split_nodes_delimiter(bold_nodes, "*", "italic")
+        code_nodes = c.split_nodes_delimiter(italic_nodes, "`", "code")
+        image_nodes = c.split_nodes_image(code_nodes)
+        link_nodes = c.split_nodes_link(image_nodes)
+        return link_nodes
