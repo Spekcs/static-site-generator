@@ -1,4 +1,6 @@
 from textnode import TextNode
+from parentnode import ParentNode
+from leafnode import LeafNode
 import re
 
 class TextConverter:
@@ -102,8 +104,60 @@ class TextConverter:
         lines = block_text.split("\n")
         if all([i.startswith(">") for i in lines]):
             return "quote"
-        if all([i.startswith("-") for i in lines]) or all([i.startswith("*") for i in lines]):
+        if all([i.startswith("- ") for i in lines]) or all([i.startswith("* ") for i in lines]):
             return "unordered_list"
         if all([l.startswith(f"{i + 1}. ") for i, l in enumerate(lines)]):
             return "ordered_list"
         return "paragraph"
+
+    def markdown_to_html_node(markdown):
+        blocks = TextConverter.markdown_to_blocks(markdown)
+        block_nodes = []
+        for block in blocks:
+            match TextConverter.block_to_block_type(block):
+                case "heading":
+                    block_nodes.append(TextConverter.heading_to_html_node(block))
+                case "code":
+                    block_nodes.append(TextConverter.code_to_html_node(block))
+                case "quote":
+                    block_nodes.append(TextConverter.quote_to_html_node(block))
+                case "unordered_list":
+                    block_nodes.append(TextConverter.ul_to_html_node(block))
+                case "ordered_list":
+                    block_nodes.append(TextConverter.ol_to_html_node(block))
+                case "paragraph":
+                    block_nodes.append(TextConverter.paragraph_to_html_node(block))
+                case _:
+                    raise ValueError("Invalid block")
+        
+        return ParentNode("div", block_nodes)
+    
+    def heading_to_html_node(block_text):
+        heading_md = re.findall(r"^#{1,6} ", block_text)[0]        
+        hashtag_count = len(heading_md) - 1
+        text = block_text.lstrip(heading_md)
+        return ParentNode(f"h{hashtag_count}", TextConverter.text_to_html_nodes(text))
+
+    def code_to_html_node(block_text):
+        text = block_text.strip("```")
+        return ParentNode("pre", [LeafNode(text, "code")])
+
+    def quote_to_html_node(block_text):
+        text_lines = [w.lstrip(">") for w in block_text.split("\n")]
+        return ParentNode("blockquote", [ParentNode("p", TextConverter.text_to_html_nodes(l)) for l in text_lines])
+
+    def ul_to_html_node(block_text):
+        text_lines = [w.lstrip("- ").lstrip("* ") for w in block_text.split("\n")]
+        return ParentNode("ul", [ParentNode("li", TextConverter.text_to_html_nodes(i)) for i in text_lines])
+
+    def ol_to_html_node(block_text):
+        text_lines = [l.lstrip(f"{i + 1}. ") for i, l in enumerate(block_text.split("\n"))]
+        return ParentNode("ol", [ParentNode("li", TextConverter.text_to_html_nodes(i)) for i in text_lines])
+
+    def paragraph_to_html_node(block_text):
+        print(TextConverter.text_to_textnodes(block_text))
+        return ParentNode("p", [i.to_html_node() for i in TextConverter.text_to_textnodes(block_text)])
+        
+    def text_to_html_nodes(text):
+        text_nodes = TextConverter.text_to_textnodes(text)
+        return [i.to_html_node() for i in text_nodes]

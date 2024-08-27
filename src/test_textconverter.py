@@ -1,4 +1,6 @@
 import unittest
+from parentnode import ParentNode
+from leafnode import LeafNode
 from textnode import TextNode
 from textconverter import TextConverter
 
@@ -173,9 +175,9 @@ third block  """
         self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
 
     def test_block_to_block_type_ul(self):
-        block = "-hi\n-this\n-"
-        block2 = "*another\n*list\n*sdf"
-        block3 = "-not\n a\n *list"
+        block = "- hi\n- this\n- "
+        block2 = "* another\n* list\n* sdf"
+        block3 = "- not\n a\n * list"
         self.assertEqual(TextConverter.block_to_block_type(block), "unordered_list")
         self.assertEqual(TextConverter.block_to_block_type(block2), "unordered_list")
         self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
@@ -187,3 +189,47 @@ third block  """
         self.assertEqual(TextConverter.block_to_block_type(block), "ordered_list")
         self.assertEqual(TextConverter.block_to_block_type(block2), "paragraph")
         self.assertEqual(TextConverter.block_to_block_type(block3), "paragraph")
+    
+    def test_markdown_to_html_node_heading(self):
+        block = "## This is a heading \n\n### This is another"
+        self.assertEqual(TextConverter.markdown_to_html_node(block), 
+                         ParentNode("div", [ParentNode("h2", [LeafNode("This is a heading")]), ParentNode("h3", [LeafNode("This is another")])]))
+                    
+    def test_markdown_to_html_node_code(self):
+        block = "```This is code```"
+        self.assertEqual(TextConverter.markdown_to_html_node(block),
+                         ParentNode("div", [ParentNode("pre", [LeafNode("This is code", "code")])]))
+    
+    def test_markdown_to_html_node_quote(self):
+        block = ">*This is * a\n>A quote"
+        self.assertEqual(TextConverter.markdown_to_html_node(block),
+                         ParentNode("div", [ParentNode("blockquote", [ParentNode("p", [LeafNode("This is ", "i"), LeafNode(" a")]), ParentNode("p", [LeafNode("A quote")])])]))
+
+    def test_markdown_to_html_node_ul(self):
+        block = "- this\n- is \n- a list \n\n * so\n* is this "
+        self.assertEqual(TextConverter.markdown_to_html_node(block),
+                         ParentNode("div", [ParentNode("ul", [ParentNode("li", [LeafNode("this")]), ParentNode("li", [LeafNode("is ")]), ParentNode("li", [LeafNode("a list")])]),
+                                            ParentNode("ul", [ParentNode("li", [LeafNode("so")]), ParentNode("li", [LeafNode("is this")])])]))
+
+    def test_markdown_to_html_node_ol(self):
+        block = "1. this\n2. is \n3. a list \n\n 1. so\n2. is this "
+        self.assertEqual(TextConverter.markdown_to_html_node(block),
+                         ParentNode("div", [ParentNode("ol", [ParentNode("li", [LeafNode("this")]), ParentNode("li", [LeafNode("is ")]), ParentNode("li", [LeafNode("a list")])]),
+                                            ParentNode("ol", [ParentNode("li", [LeafNode("so")]), ParentNode("li", [LeafNode("is this")])])]))
+            
+    def test_markdown_to_html_node_paragraph(self):
+        block = "*this is italic* and **bold**"
+        self.assertEqual(TextConverter.markdown_to_html_node(block), 
+                         ParentNode("div", [ParentNode("p", [
+            LeafNode("this is italic", "i"), LeafNode(" and "), LeafNode("bold", "b")
+        ])]))
+
+    def test_text_to_html_nodes(self):
+        text = "*italic text*`code`*italic* ![image](url)"
+        self.assertEqual(TextConverter.text_to_html_nodes(text), [
+            LeafNode("italic text", "i"),
+            LeafNode("code", "code"),
+            LeafNode("italic", "i"),
+            LeafNode(" "),
+            LeafNode("", "img", {"src": "url", "alt": "image"})
+        ])
