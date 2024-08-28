@@ -201,9 +201,9 @@ third block  """
                          ParentNode("div", [ParentNode("pre", [LeafNode("This is code", "code")])]))
     
     def test_markdown_to_html_node_quote(self):
-        block = ">*This is * a\n>A quote"
+        block = ">*This is * a"
         self.assertEqual(TextConverter.markdown_to_html_node(block),
-                         ParentNode("div", [ParentNode("blockquote", [ParentNode("p", [LeafNode("This is ", "i"), LeafNode(" a")]), ParentNode("p", [LeafNode("A quote")])])]))
+                         ParentNode("div", [ParentNode("blockquote", [LeafNode("This is ", "i"), LeafNode(" a")])]))
 
     def test_markdown_to_html_node_ul(self):
         block = "- this\n- is \n- a list \n\n * so\n* is this "
@@ -233,3 +233,12 @@ third block  """
             LeafNode(" "),
             LeafNode("", "img", {"src": "url", "alt": "image"})
         ])
+    
+    def test_extract_title(self):
+        text = "# This is a title "
+        self.assertEqual(TextConverter.extract_title(text), "This is a title")
+
+    def test_extract_title_raises(self):
+        text = "## no title"
+        with self.assertRaises(Exception):
+            TextConverter.extract_title(text)

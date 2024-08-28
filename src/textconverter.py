@@ -143,8 +143,11 @@ class TextConverter:
         return ParentNode("pre", [LeafNode(text, "code")])
 
     def quote_to_html_node(block_text):
-        text_lines = [w.lstrip(">") for w in block_text.split("\n")]
-        return ParentNode("blockquote", [ParentNode("p", TextConverter.text_to_html_nodes(l)) for l in text_lines])
+        text_lines = [w.lstrip("> ") for w in block_text.split("\n")]
+        child_nodes = []
+        for i in [TextConverter.text_to_html_nodes(l) for l in text_lines]:
+            child_nodes.extend(i) 
+        return ParentNode("blockquote", child_nodes)
 
     def ul_to_html_node(block_text):
         text_lines = [w.lstrip("- ").lstrip("* ") for w in block_text.split("\n")]
@@ -160,3 +163,10 @@ class TextConverter:
     def text_to_html_nodes(text):
         text_nodes = TextConverter.text_to_textnodes(text)
         return [i.to_html_node() for i in text_nodes]
+
+    def extract_title(markdown):
+        blocks = TextConverter.markdown_to_blocks(markdown)
+        for block in blocks:
+            if block.startswith("# "):
+                return block.lstrip("# ").strip()
+        raise Exception("No title in markdown file")
