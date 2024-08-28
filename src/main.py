@@ -15,16 +15,25 @@ def copy_files_to_public():
 
     copy_file_recursive("static/")
 
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content/", "template.html", "public/")
 
 def copy_file_recursive(directory):
     for i in os.listdir(directory):
-        if os.path.isfile(f"{directory}/{i}"):
-            shutil.copy(f"{directory}/{i}", f"{directory}/{i}".replace("static", "public"))
+        if os.path.isfile(os.path.join(directory, i)):
+            shutil.copy(os.path.join(directory, i), os.path.join(directory, i).replace("static", "public"))
             # print(f"Copied {directory}/{i} to {directory.replace('static', 'public')}/{i}")
         else:
-            os.mkdir(f"{directory}/{i}".replace("static", "public"))
-            copy_file_recursive(f"{directory}/{i}")
+            os.mkdir(os.path.join(directory, i).replace("static", "public"))
+            copy_file_recursive(os.path.join(directory, i))
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for i in os.listdir(dir_path_content):
+        if os.path.isfile(os.path.join(dir_path_content, i)):
+            generate_page(os.path.join(dir_path_content, i), template_path, os.path.join(dest_dir_path, i).replace(".md", ".html"))
+        else:
+            os.mkdir(os.path.join(dest_dir_path, i))
+            generate_pages_recursive(os.path.join(dir_path_content, i), template_path, os.path.join(dest_dir_path, i))
+
 
 def generate_page(from_path, template_path, dest_path):
     print(f"Generating page from {from_path}, to {dest_path} using {template_path}")
