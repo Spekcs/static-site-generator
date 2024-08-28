@@ -155,7 +155,6 @@ class TextConverter:
         return ParentNode("ol", [ParentNode("li", TextConverter.text_to_html_nodes(i)) for i in text_lines])
 
     def paragraph_to_html_node(block_text):
-        print(TextConverter.text_to_textnodes(block_text))
         return ParentNode("p", [i.to_html_node() for i in TextConverter.text_to_textnodes(block_text)])
         
     def text_to_html_nodes(text):
