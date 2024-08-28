@@ -150,8 +150,12 @@ class TextConverter:
         return ParentNode("blockquote", child_nodes)
 
     def ul_to_html_node(block_text):
-        text_lines = [w.lstrip("* ").lstrip("- ") for w in block_text.split("\n")]
-        print(text_lines)
+        text_lines = [w for w in block_text.split("\n")]
+        if text_lines[0].startswith("- "):
+            text_lines = [i.lstrip("- ") for i in text_lines]
+        else:
+            text_lines = [i.lstrip("* ") for i in text_lines]
+
         return ParentNode("ul", [ParentNode("li", TextConverter.text_to_html_nodes(i)) for i in text_lines])
 
     def ol_to_html_node(block_text):
